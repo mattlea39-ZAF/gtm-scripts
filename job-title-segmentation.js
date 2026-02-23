@@ -1,14 +1,12 @@
 /**
- * Clay Code Column — Job Title Segmentation
+ * Clay Formula — Job Title Segmentation (Clayscript)
  *
- * Paste this entire script into a Clay "Code" column.
- * It reads the "Job Title" column and returns one of 7 segment
- * names, or "Other" if no segment matches.
+ * HOW TO USE:
+ *   1. In Clay, add a new column → choose "Formula"
+ *   2. Paste ONLY the expression below (everything between the dashes)
+ *   3. Clay will replace {{Job Title}} with each row's value automatically
  *
- * HOW TO USE IN CLAY:
- *   1. Add a new column → choose "Code"
- *   2. Paste this script
- *   3. If your column name differs from "Job Title", update line 17
+ * This is written as a single IIFE expression — no top-level return needed.
  *
  * PRIORITY ORDER (first match wins):
  *   1. Operations Decision Maker
@@ -21,203 +19,36 @@
  *   default → Other
  */
 
-// ── CONFIG: adjust this if your column has a different name in Clay ──────────
-const raw = input["Job Title"] ?? "";
-// ─────────────────────────────────────────────────────────────────────────────
+// ── PASTE THIS EXPRESSION INTO CLAY ─────────────────────────────────────────
 
-const title = raw.toLowerCase().trim();
+((t) => {
+  const s = (kws) =>
+    kws.some((kw) =>
+      new RegExp("\\b" + kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b").test(t)
+    );
 
-/**
- * Returns true if the lowercased title matches any keyword.
- * Uses word-boundary regex so short abbreviations like "coo" or "ceo"
- * don't accidentally match words like "cook".
- */
-function anyMatch(keywords) {
-  return keywords.some((kw) => {
-    // Escape any regex special characters in the keyword
-    const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    return new RegExp(`\\b${escaped}\\b`).test(title);
-  });
-}
+  if (s(["vp of operations","vice president of operations","vice president operations","director of operations","director operations","operational director","operations director","senior director of operations","regional director of operations","area director of operations","director of operational excellence","operations excellence","chief operating officer","coo","vp operations","svp operations","executive director of operations"]))
+    return "Operations Decision Maker";
 
-const segments = [
-  // ── SEGMENT 1 ──────────────────────────────────────────────────────────────
-  {
-    name: "Operations Decision Maker",
-    keywords: [
-      "vp of operations",
-      "vice president of operations",
-      "vice president operations",
-      "director of operations",
-      "director operations",
-      "operational director",
-      "operations director",
-      "senior director of operations",
-      "regional director of operations",
-      "area director of operations",
-      "director of operational excellence",
-      "operations excellence",
-      "coo",
-      "chief operating officer",
-      "vp operations",
-      "svp operations",
-      "executive director of operations",
-      "evp operations",
-    ],
-  },
+  if (s(["general manager","multi unit","multi-unit","district manager","area director","area manager","regional manager","regional operations manager","area operations manager","area general manager","resident district manager","area coach","area leader"]))
+    return "General Manager & Multi-Unit";
 
-  // ── SEGMENT 2 ──────────────────────────────────────────────────────────────
-  {
-    name: "General Manager & Multi-Unit",
-    keywords: [
-      "general manager",
-      "multi unit",
-      "multi-unit",
-      "district manager",
-      "area director",
-      "area manager",
-      "regional manager",
-      "regional operations manager",
-      "area operations manager",
-      "area general manager",
-      "resident district manager",
-      "area coach",
-      "area leader",
-    ],
-  },
+  if (s(["executive chef","executive sous chef","corporate chef","corporate executive chef","culinary director","culinary manager","culinary systems","culinary operations","culinary partner","kitchen manager","executive kitchen manager","regional kitchen manager","regional chef","head chef","chef de cuisine","culinary development","culinary innovation","culinary lead","chief culinary"]))
+    return "Culinary Leadership";
 
-  // ── SEGMENT 3 ──────────────────────────────────────────────────────────────
-  {
-    name: "Culinary Leadership",
-    keywords: [
-      "executive chef",
-      "executive sous chef",
-      "corporate chef",
-      "corporate executive chef",
-      "culinary director",
-      "culinary manager",
-      "culinary systems",
-      "culinary operations",
-      "culinary partner",
-      "kitchen manager",
-      "executive kitchen manager",
-      "regional kitchen manager",
-      "regional chef",
-      "head chef",
-      "chef de cuisine",
-      "culinary development",
-      "culinary innovation",
-      "culinary lead",
-      "chief culinary",
-    ],
-  },
+  if (s(["director of restaurant technology","director of information technology","director of it","vp of technology","vice president of technology","vice president of information technology","chief information officer","cio","restaurant technology","restaurant systems","store systems","back office systems","point of sale manager","pos manager","it director","it manager","director of enterprise applications","director of information systems","technology director","senior director of it","senior manager restaurant technology"]))
+    return "Restaurant Technology & IT";
 
-  // ── SEGMENT 4 ──────────────────────────────────────────────────────────────
-  {
-    name: "Restaurant Technology & IT",
-    keywords: [
-      "director of restaurant technology",
-      "director of information technology",
-      "director of it",
-      "vp of technology",
-      "vice president of technology",
-      "vice president of information technology",
-      "chief information officer",
-      "cio",
-      "restaurant technology",
-      "restaurant systems",
-      "store systems",
-      "back office systems",
-      "point of sale manager",
-      "pos manager",
-      "it director",
-      "it manager",
-      "director of enterprise applications",
-      "director of information systems",
-      "technology director",
-      "senior director of it",
-      "senior manager restaurant technology",
-      "director of it infrastructure",
-    ],
-  },
+  if (s(["chief executive","ceo","president","founder","co-founder","owner/operator","owner / operator","managing director","managing partner","managing owner","principal owner","business owner","owner/ceo","ceo/founder","ceo & owner"]))
+    return "C-Suite, Founder & Owner";
 
-  // ── SEGMENT 5 ──────────────────────────────────────────────────────────────
-  {
-    name: "C-Suite, Founder & Owner",
-    keywords: [
-      "chief executive",
-      "ceo",
-      "president",
-      "founder",
-      "co-founder",
-      "owner/operator",
-      "owner / operator",
-      "managing director",
-      "managing partner",
-      "managing owner",
-      "principal owner",
-      "business owner",
-      "owner/ceo",
-      "ceo/founder",
-      "ceo & owner",
-      "ceo / owner",
-    ],
-  },
+  if (s(["franchise owner","franchisee","franchise business consultant","franchise director","franchise operations","franchise partner","multi-unit franchisee","master franchisor","area franchise"]))
+    return "Franchise Operations";
 
-  // ── SEGMENT 6 ──────────────────────────────────────────────────────────────
-  {
-    name: "Franchise Operations",
-    keywords: [
-      "franchise owner",
-      "franchisee",
-      "franchise business consultant",
-      "franchise director",
-      "franchise operations",
-      "franchise partner",
-      "multi-unit franchisee",
-      "master franchisor",
-      "area franchise",
-    ],
-  },
+  if (s(["retired","barista","bartender","server","delivery driver","cashier","line cook","real estate agent","realtor","tattoo","lawyer","attorney","doctor","nurse","teacher","professor","student","janitor","electrician","mechanic","musician","artist","photographer","life coach","fitness"]))
+    return "Not Relevant";
 
-  // ── SEGMENT 7 (checked last so legitimate ops titles aren't excluded) ──────
-  {
-    name: "Not Relevant",
-    keywords: [
-      "retired",
-      "barista",
-      "bartender",
-      "server",
-      "delivery driver",
-      "cashier",
-      "line cook",
-      "real estate agent",
-      "realtor",
-      "tattoo",
-      "lawyer",
-      "attorney",
-      "doctor",
-      "nurse",
-      "teacher",
-      "professor",
-      "student",
-      "janitor",
-      "electrician",
-      "mechanic",
-      "musician",
-      "artist",
-      "photographer",
-      "life coach",
-      "fitness",
-    ],
-  },
-];
+  return "Other";
+})(({{Job Title}} || "").toLowerCase())
 
-// Evaluate segments in priority order; return the first match
-for (const segment of segments) {
-  if (anyMatch(segment.keywords)) {
-    return segment.name;
-  }
-}
-
-return "Other";
+// ────────────────────────────────────────────────────────────────────────────
